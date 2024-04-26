@@ -69,7 +69,7 @@ public class CacheSimulatorMilestone2 {
         }
 
         // Display the input parameters and calculated values
-        System.out.println("Cache Simulator CS 3853 - Group #9\n");
+        System.out.println("Cache Simulator CS 3853 - Group #10\n");
         System.out.println("Trace File: " + traceFileName + "\n");
         System.out.println("***** Cache Input Parameters *****");
         System.out.println("Cache Size: " + cacheSize + " KB");
