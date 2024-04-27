@@ -5,8 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.HashSet;
-import java.util.Set;
 
 public class CacheSimulatorMilestone2 {
     private static Cache cache;
@@ -14,7 +12,7 @@ public class CacheSimulatorMilestone2 {
     public static void main(String[] args) {
         if (args.length != 12) {
             System.out.println("Invalid number of arguments. ");
-            System.out.println("Usage: Sim.exe –s <cache size in KB> –b <block size> –a <associativity> –r <replacement policy> –p <physical memory - MB> -u <% phys mem used> -n <Instr / Time Slice> –f <trace file name>");
+            System.out.println("Usage: sim.exe –s <cache size in KB> –b <block size> –a <associativity> –r <replacement policy> –p <physical memory - MB> -u <% phys mem used> -n <Instr / Time Slice> –f <trace file name>");
             return;
         }
 
@@ -32,7 +30,7 @@ public class CacheSimulatorMilestone2 {
                 case "-s":
                     if (i + 1 < args.length) {
                         cacheSize = Integer.parseInt(args[i + 1]);
-                        i++; // Move to the next argument
+                        i++; 
                     }
                     break;
                 case "-b":
@@ -79,12 +77,11 @@ public class CacheSimulatorMilestone2 {
                     break;
                 default:
                     // Handle unexpected or incorrect input
-                    System.out.println("Invalid arguments provided.");
+                	System.out.println("Unexpected argument: " + args[i]);
                     return;
          }
        }
-   
-        String fullReplacementPolicy = replacementPolicy.equals("rr") ? "Round Robin" : "Random";
+  
         
         // Display the input parameters and calculated values
         System.out.println("Cache Simulator CS 3853 - Group #10\n");
@@ -93,7 +90,7 @@ public class CacheSimulatorMilestone2 {
         System.out.println("Cache Size: " + cacheSize + " KB");
         System.out.println("Block Size: " + blockSize + " bytes");
         System.out.println("Associativity: " + associativity);
-        System.out.println("Replacement Policy: " + fullReplacementPolicy);
+        System.out.println("Replacement Policy: " + replacementPolicy);
         System.out.println("Physical Memory: " + physicalMemorySize + " MB");
         System.out.println("Percent Memory Used by System: " + percentMemoryUsed);
         System.out.println("Instructions / Time Slice: " + instructionsPerTimeSlice + "\n");
@@ -103,13 +100,13 @@ public class CacheSimulatorMilestone2 {
         int tagSize = 32 - (int) (Math.log(blockSize) / Math.log(2)) - (int) (Math.log(totalBlocks / associativity) / Math.log(2));
         int indexSize = (int) (Math.log(totalBlocks / associativity) / Math.log(2));
         int totalRows = totalBlocks / associativity;
-        int overheadSize = totalRows * (3 + tagSize + (blockSize * 8)); // Assuming 8 bits per byte
-        double implementationMemorySize = ((overheadSize + cacheSize * 1024) / 1024.0); // In KB
-        double cost = implementationMemorySize * 0.09; // $0.09 per KB
+        int overheadSize = totalRows * (3 + tagSize + (blockSize * 8)); 
+        double implementationMemorySize = ((overheadSize + cacheSize * 1024) / 1024.0); 
+        double cost = implementationMemorySize * 0.09; 
 
-        int numPhysicalPages = physicalMemorySize * 256; // Assuming 4KB per page
+        int numPhysicalPages = physicalMemorySize * 256; 
         int numPagesForSystem = (int)(numPhysicalPages * (percentMemoryUsed / 100.0));
-        int sizeOfPageTableEntry = 20; // Simplistic assumption
+        int sizeOfPageTableEntry = 20; 
         long totalRAMForPageTables = (long) numPhysicalPages * sizeOfPageTableEntry / 8; // Bytes
         
         System.out.println("\n***** Cache Calculated Values *****");
@@ -126,17 +123,17 @@ public class CacheSimulatorMilestone2 {
         System.out.println("Number of Pages for System: " + numPagesForSystem);
         System.out.println("Size of Page Table Entry: " + sizeOfPageTableEntry + " bits");
         System.out.println("Total RAM for Page Table(s): " + totalRAMForPageTables + " bytes");
-        // Initialize the cache with your desired parameters
+        
         cache = new Cache(cacheSize * 1024, blockSize, associativity);
 
-        // Read and parse the memory trace file
+       
         try (BufferedReader br = new BufferedReader(new FileReader(traceFileName))) {
             String line;
             while ((line = br.readLine()) != null) {
-                // Parse the line from the trace file
+                
                 MemoryAccess memoryAccess = parseTraceFile(line);
 
-                // Now you can use the information in 'memoryAccess' to simulate cache behavior
+                
                 if (memoryAccess != null) {
                     simulateCache(memoryAccess, blockSize);
                 }
@@ -148,13 +145,13 @@ public class CacheSimulatorMilestone2 {
         // Calculate derived metrics
         int totalCacheAccesses = cache.getTotalCacheAccesses();
         int cacheHits = 0;
-        int compulsoryMisses = 0; // calculate compulsoryMisses based on your simulation
+        int compulsoryMisses = 0; 
         
         int cacheMisses = totalCacheAccesses - cacheHits;
         double hitRate = (double) cacheHits / totalCacheAccesses * 100;
         double missRate = 100 - hitRate;
-        double baseCPI = 1.0; // Base cycles per instruction without memory delay
-        double missPenalty = 20.0; // Additional cycles per cache miss
+        double baseCPI = 1.0; 
+        double missPenalty = 20.0; 
         double cpi = calculateCPI(cacheHits, cache.getTotalCacheAccesses(), baseCPI, missPenalty);
 
         // Print simulation results
@@ -180,6 +177,7 @@ public class CacheSimulatorMilestone2 {
         String.format("%.2f", unusedKB / (cacheSize * 1024) * 100) + "%" + "Waste: $" + String.format("%.2f", waste));
         System.out.println("Unused Cache Blocks: " + (cacheSize * 1024 - totalBlocks + compulsoryMisses) + " / " + (cacheSize * 1024) + "\n");
     }
+    
     // MemoryAccess class to represent a memory access
     static class MemoryAccess {
         private int address;
@@ -214,7 +212,6 @@ public class CacheSimulatorMilestone2 {
         private int totalCacheAccesses;
         private int totalCacheHits;
         private long instructionBytes;
-        private Set<Integer> accessedBlocks = new HashSet<>();
         private int compulsoryMisses;
         private int conflictMisses;
         
@@ -255,102 +252,81 @@ public class CacheSimulatorMilestone2 {
             this.associativity = associativity;
             this.tags = new HashMap<>();
         }
-// HHEEEELLLPP
-        public boolean simulateAccess(int tag, int blockNumber, int length) {
-            boolean isHit = tags.containsKey(tag);
-            if (isHit) {
-                cache.incrementHits();  // increment hit count
-            } else {
-                if (tags.size() >= associativity) {
-                    cache.incrementConflictMisses();  // conflict misses
-                }
-                tags.put(tag, blockNumber);  
+
+        public int simulateAccess(int tag, int blockNumber, int length) {
+
+            if (tags.containsKey(tag)) {
+                tags.put(tag, blockNumber);
             }
-            return isHit;
+            // Increment totalCacheAccesses
+            cache.totalCacheAccesses++;
+
+            return length / 4; 
         }
         public boolean isFull() {
             return tags.size() >= associativity;
         }
     }
-    private static MemoryAccess parseTraceFile(String line) {
-        if (line.startsWith("EIP")) {
-            return parseInstructionLine(line);
-        } else if (line.startsWith("dstM")) {
-            return parseDstMLine(line);
-        } else if (line.startsWith("srcM")) {
-            return parseSrcMLine(line);
-        }
-        return null; // If the line type is not recognized
-    }
-
+  
     private static double calculateCPI(int hits, int accesses, double baseCPI, double missPenalty) {
         if (accesses == 0) return baseCPI;
         double hitRate = (double) hits / accesses;
         return baseCPI + (1 - hitRate) * missPenalty;
     }
+    
+ 
+    private static MemoryAccess parseTraceFile(String line) {
+       
+        if (line.startsWith("EIP (")) {
+            // Instruction line
+            return parseInstructionLine(line);
+        } else if (line.startsWith("dstM")) {
+            // dstM line
+            return parseDstMLine(line);
+        } else if (line.startsWith("srcM")) {
+            // srcM line
+            return parseSrcMLine(line);
+        }
+
+        return null;
+    }
 
     private static MemoryAccess parseInstructionLine(String line) {
-        String[] parts = line.split("\\s+");
-        if (parts.length < 3) {
-            System.out.println("Error: Insufficient parts in line: " + line);
+        
+        String[] parts = line.split(":");
+        if (parts.length < 2) {
+   
             return null;
         }
 
-        String hexAddress = parts[1].substring(0, parts[1].length() - 1); 
+        String[] addressInfo = parts[1].trim().split("\\s+");
+        if (addressInfo.length < 2) {
+          
+            return null;
+        }
+
+        String addressStr = addressInfo[1];
 
         try {
-            int address = Integer.parseInt(hexAddress, 16);  
-            int length = 4;  
-            return new MemoryAccess(address, length, true);
+            
+            return new MemoryAccess(Integer.parseInt(addressStr, 16), 0, true);
         } catch (NumberFormatException e) {
-            System.out.println("Error parsing address in line: " + line);
+            
+            System.out.println("Error parsing line: " + line);
             System.out.println("Exception message: " + e.getMessage());
             return null;
         }
     }
 
-       
-    private static MemoryAccess parseDstMLine(String line) {
-        String[] parts = line.split("\\s+");
-        if (parts.length < 2) {
-            System.out.println("Error: Insufficient parts in line: " + line);
-            return null;
-        }
 
-        String hexAddress = parts[1];
-        if (!hexAddress.equals("--------")) {
-            try {
-                int address = Integer.parseInt(hexAddress, 16);
-                int length = 4;  
-                return new MemoryAccess(address, length, false);
-            } catch (NumberFormatException e) {
-                System.out.println("Error parsing destination memory address in line: " + line);
-                System.out.println("Exception message: " + e.getMessage());
-            }
-        }
+    private static MemoryAccess parseDstMLine(String line) {
         return null;
     }
 
     private static MemoryAccess parseSrcMLine(String line) {
-        String[] parts = line.split("\\s+");
-        if (parts.length < 2) {
-            System.out.println("Error: Insufficient parts in line: " + line);
-            return null;
-        }
-
-        String hexAddress = parts[1];
-        if (!hexAddress.equals("--------")) {
-            try {
-                int address = Integer.parseInt(hexAddress, 16);
-                int length = 4; 
-                return new MemoryAccess(address, length, false);
-            } catch (NumberFormatException e) {
-                System.out.println("Error parsing source memory address in line: " + line);
-                System.out.println("Exception message: " + e.getMessage());
-            }
-        }
         return null;
     }
+
 
     private static void simulateCache(MemoryAccess memoryAccess, int blockSize) {
         // Cache hit or miss logic
@@ -368,25 +344,16 @@ public class CacheSimulatorMilestone2 {
         }
        
         for (int i = 0; i < blocksToRead; i++) {
-            // Calculate block number and set index for each block accessed
+            
             int blockNumber = (address + i * bytesAccessedSimultaneously) / blockSize;
             int setIndex = blockNumber % (cache.size / (blockSize * cache.associativity));
             int tag = blockNumber / (cache.size / (blockSize * cache.associativity));
-
-            // Check for compulsory misses
-            if (!cache.accessedBlocks.contains(blockNumber)) {
-                cache.compulsoryMisses++;
-                cache.accessedBlocks.add(blockNumber);
-            }
             
             CacheLine cacheLine = cache.cacheLines.computeIfAbsent(setIndex, k -> new CacheLine(cache.associativity));
-            boolean hit = cacheLine.simulateAccess(tag, blockNumber, length);
+            cacheLine.simulateAccess(tag, blockNumber, length);
             
-          
-            if (!hit && cacheLine.isFull()) {
-                cache.incrementConflictMisses();
             }
-        }
+
     }        
 }
 
